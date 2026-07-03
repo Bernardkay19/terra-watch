@@ -1,26 +1,39 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import dynamic from 'next/dynamic';
-import { AlertCircle, Activity, Droplets, MapPin, Loader2, Calendar, ShieldAlert, AlertTriangle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import * as React from "react";
+import dynamic from "next/dynamic";
+import {
+  AlertCircle,
+  Activity,
+  Droplets,
+  MapPin,
+  Loader2,
+  Calendar,
+  ShieldAlert,
+  AlertTriangle,
+  Search,
+  Crosshair,
+  Thermometer,
+  Wind,
+} from "lucide-react";
+import { supabase } from "../lib/supabase";
 
-const Map = dynamic(() => import('@/components/Map'), { 
-  ssr: false, 
+const Map = dynamic(() => import("@/components/Map"), {
+  ssr: false,
   loading: () => (
     <div className="flex h-full w-full items-center justify-center bg-zinc-900 text-zinc-500 rounded-xl">
       Loading Map...
     </div>
-  ) 
+  ),
 });
 
 interface Report {
   id: string;
-  type: 'mining' | 'pollution' | 'flooding';
+  type: "mining" | "pollution" | "flooding";
   description: string;
   latitude: number;
   longitude: number;
-  status: 'pending' | 'verified' | 'dismissed';
+  status: "pending" | "verified" | "dismissed";
   created_at: string;
 }
 
@@ -30,11 +43,11 @@ interface FloodRiskZone {
   latitude: number;
   longitude: number;
   risk_score: number;
-  status: 'high' | 'medium' | 'low';
+  status: "high" | "medium" | "low";
   mining_risk_score?: number;
-  mining_status?: 'high' | 'medium' | 'low';
+  mining_status?: "high" | "medium" | "low";
   pollution_risk_score?: number;
-  pollution_status?: 'high' | 'medium' | 'low';
+  pollution_status?: "high" | "medium" | "low";
   created_at: string;
 }
 
@@ -44,30 +57,69 @@ export default function Home() {
   const [loading, setLoading] = React.useState<boolean>(true);
   const [isReporting, setIsReporting] = React.useState<boolean>(false);
   const [submitting, setSubmitting] = React.useState<boolean>(false);
-  const [selectedLocation, setSelectedLocation] = React.useState<{ latitude: number; longitude: number } | null>(null);
-  const [userLocation, setUserLocation] = React.useState<{ latitude: number; longitude: number } | null>(null);
+  const [selectedLocation, setSelectedLocation] = React.useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const [userLocation, setUserLocation] = React.useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
   const [focusedReport, setFocusedReport] = React.useState<Report | null>(null);
-  const [focusedZone, setFocusedZone] = React.useState<FloodRiskZone | null>(null);
-  const [selectedCategoryFilter, setSelectedCategoryFilter] = React.useState<string>('all');
-  const [activeTab, setActiveTab] = React.useState<'reports' | 'flood_risk'>('reports');
-  const [activeRiskType, setActiveRiskType] = React.useState<'flood' | 'mining' | 'pollution'>('flood');
+  const [focusedZone, setFocusedZone] = React.useState<FloodRiskZone | null>(
+    null,
+  );
+  const [selectedCategoryFilter, setSelectedCategoryFilter] =
+    React.useState<string>("all");
+  const [activeTab, setActiveTab] = React.useState<
+    "reports" | "flood_risk" | "search"
+  >("reports");
+  const [activeRiskType, setActiveRiskType] = React.useState<
+    "flood" | "mining" | "pollution"
+  >("flood");
+
+  // Location Search State
+  const [searchQuery, setSearchQuery] = React.useState<string>("");
+  const [searchLoading, setSearchLoading] = React.useState<boolean>(false);
+  const [searchResult, setSearchResult] = React.useState<{
+    name: string;
+    latitude: number;
+    longitude: number;
+    rainfall: number;
+    floodRisk: number;
+    floodStatus: "high" | "medium" | "low";
+    miningDistance: number;
+    miningRisk: number;
+    miningStatus: "high" | "medium" | "low";
+    pollutionRisk: number;
+    pollutionStatus: "high" | "medium" | "low";
+    temperature: number;
+    windspeed: number;
+  } | null>(null);
+  const [searchError, setSearchError] = React.useState<string>("");
+  const [searchFocused, setSearchFocused] = React.useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
 
   // Form State
-  const [reportType, setReportType] = React.useState<'mining' | 'pollution' | 'flooding'>('mining');
-  const [description, setDescription] = React.useState<string>('');
+  const [reportType, setReportType] = React.useState<
+    "mining" | "pollution" | "flooding"
+  >("mining");
+  const [description, setDescription] = React.useState<string>("");
 
   // Get User Location by Default
   React.useEffect(() => {
-    if (typeof window !== 'undefined' && navigator.geolocation) {
+    if (typeof window !== "undefined" && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           setUserLocation({ latitude, longitude });
         },
         (error) => {
-          console.warn('Geolocation access denied or error:', error);
+          console.warn("Geolocation access denied or error:", error);
         },
-        { enableHighAccuracy: true, timeout: 10000 }
+        { enableHighAccuracy: true, timeout: 10000 },
       );
     }
   }, []);
@@ -76,7 +128,12 @@ export default function Home() {
   React.useEffect(() => {
     if (isReporting && !selectedLocation && userLocation) {
       const { latitude, longitude } = userLocation;
-      if (longitude >= -3.79 && longitude <= 1.25 && latitude >= 4.68 && latitude <= 11.2) {
+      if (
+        longitude >= -3.79 &&
+        longitude <= 1.25 &&
+        latitude >= 4.68 &&
+        latitude <= 11.2
+      ) {
         setSelectedLocation({ latitude, longitude });
       }
     }
@@ -86,14 +143,14 @@ export default function Home() {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('reports')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("reports")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       setReports(data || []);
     } catch (err) {
-      console.error('Error fetching reports:', err);
+      console.error("Error fetching reports:", err);
     } finally {
       setLoading(false);
     }
@@ -102,14 +159,14 @@ export default function Home() {
   const fetchFloodRisks = async () => {
     try {
       const { data, error } = await supabase
-        .from('flood_risk')
-        .select('*')
-        .order('risk_score', { ascending: false });
+        .from("flood_risk")
+        .select("*")
+        .order("risk_score", { ascending: false });
 
       if (error) throw error;
       setFloodRisks(data || []);
     } catch (err) {
-      console.error('Error fetching flood risks:', err);
+      console.error("Error fetching flood risks:", err);
     }
   };
 
@@ -122,34 +179,132 @@ export default function Home() {
     setSelectedLocation({ latitude: lat, longitude: lon });
   };
 
+  const handleLocationSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+
+    setSearchLoading(true);
+    setSearchError("");
+    setSearchResult(null);
+
+    try {
+      const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+      // 1. Geocode location name using Mapbox
+      const geoRes = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?country=GH&limit=1&access_token=${mapboxToken}`,
+      );
+      const geoData = await geoRes.json();
+
+      if (!geoData.features || geoData.features.length === 0) {
+        setSearchError(
+          'Location not found. Try a town or city in Ghana (e.g. "Tarkwa", "Obuasi", "Kumasi").',
+        );
+        setSearchLoading(false);
+        return;
+      }
+
+      const feature = geoData.features[0];
+      const [lng, lat] = feature.center;
+      const locationName = feature.place_name;
+
+      // 2. Fetch weather from Open-Meteo
+      const weatherRes = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=precipitation_sum&current_weather=true&timezone=auto`,
+      );
+      const weatherData = await weatherRes.json();
+      const rainfall7d =
+        weatherData?.daily?.precipitation_sum?.reduce(
+          (a: number, b: number) => a + b,
+          0,
+        ) || 15.0;
+      const temperature = weatherData?.current_weather?.temperature ?? 28.0;
+      const windspeed = weatherData?.current_weather?.windspeed ?? 12.0;
+
+      // 3. Distance to nearest mining report
+      let minDistance = 999.0;
+      reports.forEach((r) => {
+        const dlat = r.latitude - lat;
+        const dlon = r.longitude - lng;
+        const dist = Math.sqrt(dlat * dlat + dlon * dlon) * 111.0;
+        if (dist < minDistance) minDistance = dist;
+      });
+
+      // 4. Compute risk scores (same formulas as backend)
+      const baseVuln = lat < 6.5 ? 0.65 : 0.35;
+      const clearingFactor =
+        minDistance < 10 ? 0.4 : minDistance < 25 ? 0.2 : 0.05;
+      const rainfallNorm = Math.min(1.0, rainfall7d / 150.0);
+
+      const floodRisk = Math.min(
+        1.0,
+        rainfallNorm * 0.5 + baseVuln * 0.4 + clearingFactor * 0.1,
+      );
+      const miningRisk = Math.min(1.0, Math.max(0.1, 1.0 - minDistance / 50.0));
+      const pollutionNorm = Math.min(1.0, rainfall7d / 120.0);
+      const pollutionRisk = Math.min(
+        1.0,
+        pollutionNorm * 0.4 + clearingFactor * 0.4 + baseVuln * 0.2,
+      );
+
+      const scoreToStatus = (s: number): "high" | "medium" | "low" =>
+        s >= 0.7 ? "high" : s >= 0.4 ? "medium" : "low";
+
+      setSearchResult({
+        name: locationName,
+        latitude: lat,
+        longitude: lng,
+        rainfall: rainfall7d,
+        floodRisk,
+        floodStatus: scoreToStatus(floodRisk),
+        miningDistance: minDistance,
+        miningRisk,
+        miningStatus: scoreToStatus(miningRisk),
+        pollutionRisk,
+        pollutionStatus: scoreToStatus(pollutionRisk),
+        temperature,
+        windspeed,
+      });
+
+      // Pan map to result
+      setSearchFocused({ latitude: lat, longitude: lng });
+    } catch (err) {
+      console.error(err);
+      setSearchError(
+        "Failed to fetch location data. Please check your connection and try again.",
+      );
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedLocation || !description.trim()) return;
 
     try {
       setSubmitting(true);
-      const { error } = await supabase
-        .from('reports')
-        .insert([
-          {
-            type: reportType,
-            description: description.trim(),
-            latitude: selectedLocation.latitude,
-            longitude: selectedLocation.longitude,
-            status: 'pending'
-          }
-        ]);
+      const { error } = await supabase.from("reports").insert([
+        {
+          type: reportType,
+          description: description.trim(),
+          latitude: selectedLocation.latitude,
+          longitude: selectedLocation.longitude,
+          status: "pending",
+        },
+      ]);
 
       if (error) throw error;
 
       // Reset state and refresh
       setIsReporting(false);
-      setDescription('');
+      setDescription("");
       setSelectedLocation(null);
       await fetchReports();
     } catch (err) {
-      console.error('Error submitting report:', err);
-      alert('Failed to submit report. Please verify your Supabase database table `reports` has been created by running `supabase_schema.sql` in your SQL Editor.');
+      console.error("Error submitting report:", err);
+      alert(
+        "Failed to submit report. Please verify your Supabase database table `reports` has been created by running `supabase_schema.sql` in your SQL Editor.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -157,10 +312,16 @@ export default function Home() {
 
   const getAlertIcon = (type: string) => {
     switch (type) {
-      case 'mining': return <ShieldAlert className="text-red-500 w-5 h-5 flex-shrink-0" />;
-      case 'pollution': return <AlertTriangle className="text-amber-500 w-5 h-5 flex-shrink-0" />;
-      case 'flooding': return <Droplets className="text-blue-500 w-5 h-5 flex-shrink-0" />;
-      default: return null;
+      case "mining":
+        return <ShieldAlert className="text-red-500 w-5 h-5 flex-shrink-0" />;
+      case "pollution":
+        return (
+          <AlertTriangle className="text-amber-500 w-5 h-5 flex-shrink-0" />
+        );
+      case "flooding":
+        return <Droplets className="text-blue-500 w-5 h-5 flex-shrink-0" />;
+      default:
+        return null;
     }
   };
 
@@ -170,19 +331,19 @@ export default function Home() {
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);
-    
-    if (diffMins < 1) return 'Just now';
+
+    if (diffMins < 1) return "Just now";
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     return date.toLocaleDateString();
   };
 
-  const miningCount = reports.filter(r => r.type === 'mining').length;
-  const pollutionCount = reports.filter(r => r.type === 'pollution').length;
-  const floodingCount = reports.filter(r => r.type === 'flooding').length;
+  const miningCount = reports.filter((r) => r.type === "mining").length;
+  const pollutionCount = reports.filter((r) => r.type === "pollution").length;
+  const floodingCount = reports.filter((r) => r.type === "flooding").length;
 
-  const filteredReports = reports.filter(report => {
-    if (selectedCategoryFilter === 'all') return true;
+  const filteredReports = reports.filter((report) => {
+    if (selectedCategoryFilter === "all") return true;
     return report.type === selectedCategoryFilter;
   });
 
@@ -206,85 +367,110 @@ export default function Home() {
           {/* Stats Summary Panel */}
           <div className="grid grid-cols-3 gap-2.5">
             <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-2 text-center transition-all hover:bg-red-500/15">
-              <span className="text-[10px] font-bold text-red-400 block uppercase tracking-wider animate-pulse">Mining</span>
-              <span className="text-xl font-extrabold text-red-500">{miningCount}</span>
+              <span className="text-[10px] font-bold text-red-400 block uppercase tracking-wider animate-pulse">
+                Mining
+              </span>
+              <span className="text-xl font-extrabold text-red-500">
+                {miningCount}
+              </span>
             </div>
             <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-2 text-center transition-all hover:bg-amber-500/15">
-              <span className="text-[10px] font-bold text-amber-400 block uppercase tracking-wider">Pollution</span>
-              <span className="text-xl font-extrabold text-amber-500">{pollutionCount}</span>
+              <span className="text-[10px] font-bold text-amber-400 block uppercase tracking-wider">
+                Pollution
+              </span>
+              <span className="text-xl font-extrabold text-amber-500">
+                {pollutionCount}
+              </span>
             </div>
             <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-2 text-center transition-all hover:bg-blue-500/15">
-              <span className="text-[10px] font-bold text-blue-400 block uppercase tracking-wider">Flooding</span>
-              <span className="text-xl font-extrabold text-blue-500">{floodingCount}</span>
+              <span className="text-[10px] font-bold text-blue-400 block uppercase tracking-wider">
+                Flooding
+              </span>
+              <span className="text-xl font-extrabold text-blue-500">
+                {floodingCount}
+              </span>
             </div>
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex bg-zinc-950 p-1 border border-white/5 rounded-xl">
+          <div className="grid grid-cols-3 bg-zinc-950 p-1 border border-white/5 rounded-xl gap-1">
             <button
-              onClick={() => setActiveTab('reports')}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer text-center ${
-                activeTab === 'reports'
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'text-zinc-500 hover:text-zinc-300'
+              onClick={() => setActiveTab("reports")}
+              className={`py-2 text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center ${
+                activeTab === "reports"
+                  ? "bg-emerald-600 text-white shadow-md"
+                  : "text-zinc-500 hover:text-zinc-300"
               }`}
             >
               Citizen Reports
             </button>
             <button
-              onClick={() => setActiveTab('flood_risk')}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer text-center ${
-                activeTab === 'flood_risk'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-zinc-500 hover:text-zinc-300'
+              onClick={() => setActiveTab("flood_risk")}
+              className={`py-2 text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center ${
+                activeTab === "flood_risk"
+                  ? "bg-blue-600 text-white shadow-md"
+                  : "text-zinc-500 hover:text-zinc-300"
               }`}
             >
-              Flood Risk
+              AI Risk
+            </button>
+            <button
+              onClick={() => setActiveTab("search")}
+              className={`py-2 text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center flex items-center justify-center gap-1 ${
+                activeTab === "search"
+                  ? "bg-violet-600 text-white shadow-md"
+                  : "text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              <Search size={10} />
+              Inspect
             </button>
           </div>
 
-          {activeTab === 'reports' ? (
+          {activeTab === "reports" ? (
             <>
               {/* Category Filter Tabs */}
               <div className="space-y-2">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">Filter Alerts</label>
+                <label className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">
+                  Filter Alerts
+                </label>
                 <div className="grid grid-cols-4 gap-1 bg-zinc-950 p-1 border border-white/5 rounded-xl">
                   <button
-                    onClick={() => setSelectedCategoryFilter('all')}
+                    onClick={() => setSelectedCategoryFilter("all")}
                     className={`py-1 px-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
-                      selectedCategoryFilter === 'all'
-                        ? 'bg-zinc-800 text-white shadow-sm'
-                        : 'text-zinc-500 hover:text-zinc-300'
+                      selectedCategoryFilter === "all"
+                        ? "bg-zinc-800 text-white shadow-sm"
+                        : "text-zinc-500 hover:text-zinc-300"
                     }`}
                   >
                     All
                   </button>
                   <button
-                    onClick={() => setSelectedCategoryFilter('mining')}
+                    onClick={() => setSelectedCategoryFilter("mining")}
                     className={`py-1 px-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
-                      selectedCategoryFilter === 'mining'
-                        ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                        : 'text-zinc-500 hover:text-zinc-300'
+                      selectedCategoryFilter === "mining"
+                        ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                        : "text-zinc-500 hover:text-zinc-300"
                     }`}
                   >
                     Mining
                   </button>
                   <button
-                    onClick={() => setSelectedCategoryFilter('pollution')}
+                    onClick={() => setSelectedCategoryFilter("pollution")}
                     className={`py-1 px-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
-                      selectedCategoryFilter === 'pollution'
-                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                        : 'text-zinc-500 hover:text-zinc-300'
+                      selectedCategoryFilter === "pollution"
+                        ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                        : "text-zinc-500 hover:text-zinc-300"
                     }`}
                   >
                     Pollution
                   </button>
                   <button
-                    onClick={() => setSelectedCategoryFilter('flooding')}
+                    onClick={() => setSelectedCategoryFilter("flooding")}
                     className={`py-1 px-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
-                      selectedCategoryFilter === 'flooding'
-                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                        : 'text-zinc-500 hover:text-zinc-300'
+                      selectedCategoryFilter === "flooding"
+                        ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                        : "text-zinc-500 hover:text-zinc-300"
                     }`}
                   >
                     Flooding
@@ -300,9 +486,10 @@ export default function Home() {
                     Report Activity
                   </h2>
                   <p className="text-xs text-zinc-400 mt-2 mb-4 leading-relaxed">
-                    Empower your community. Submit reports of illegal mining (galamsey), toxic river pollution, or localized flood risk.
+                    Empower your community. Submit reports of illegal mining
+                    (galamsey), toxic river pollution, or localized flood risk.
                   </p>
-                  <button 
+                  <button
                     onClick={() => setIsReporting(true)}
                     className="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-sm font-semibold py-2.5 px-4 rounded-xl transition-all duration-200 shadow-lg shadow-emerald-900/20 cursor-pointer"
                   >
@@ -311,13 +498,16 @@ export default function Home() {
                 </div>
               ) : (
                 /* Form Box when reporting */
-                <form onSubmit={handleSubmit} className="bg-zinc-900 border border-emerald-500/20 rounded-2xl p-4 shadow-2xl space-y-4 animate-fadeIn">
+                <form
+                  onSubmit={handleSubmit}
+                  className="bg-zinc-900 border border-emerald-500/20 rounded-2xl p-4 shadow-2xl space-y-4 animate-fadeIn"
+                >
                   <div className="flex items-center justify-between border-b border-white/5 pb-2">
                     <h2 className="text-sm font-semibold text-emerald-400 flex items-center gap-2">
                       <Activity size={18} />
                       New Citizen Report
                     </h2>
-                    <button 
+                    <button
                       type="button"
                       onClick={() => {
                         setIsReporting(false);
@@ -331,8 +521,10 @@ export default function Home() {
 
                   {/* Type Select */}
                   <div className="space-y-1.5">
-                    <label className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">Report Category</label>
-                    <select 
+                    <label className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">
+                      Report Category
+                    </label>
+                    <select
                       value={reportType}
                       onChange={(e) => setReportType(e.target.value as any)}
                       className="w-full bg-zinc-800 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
@@ -345,11 +537,16 @@ export default function Home() {
 
                   {/* Location selection info */}
                   <div className="space-y-1.5">
-                    <label className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">Location Coordinates</label>
+                    <label className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">
+                      Location Coordinates
+                    </label>
                     {selectedLocation ? (
                       <div className="flex items-center gap-2 text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-2.5 rounded-xl">
                         <MapPin size={14} />
-                        <span>Lat: {selectedLocation.latitude.toFixed(5)}, Lon: {selectedLocation.longitude.toFixed(5)}</span>
+                        <span>
+                          Lat: {selectedLocation.latitude.toFixed(5)}, Lon:{" "}
+                          {selectedLocation.longitude.toFixed(5)}
+                        </span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2 text-xs bg-red-500/10 border border-red-500/20 text-red-400 p-2.5 rounded-xl">
@@ -361,8 +558,10 @@ export default function Home() {
 
                   {/* Description */}
                   <div className="space-y-1.5">
-                    <label className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">Description / Details</label>
-                    <textarea 
+                    <label className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">
+                      Description / Details
+                    </label>
+                    <textarea
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="Describe the activity (e.g., active excavation, muddy water, farm flooding...)"
@@ -372,13 +571,15 @@ export default function Home() {
                     />
                   </div>
 
-                  <button 
+                  <button
                     type="submit"
-                    disabled={submitting || !selectedLocation || !description.trim()}
+                    disabled={
+                      submitting || !selectedLocation || !description.trim()
+                    }
                     className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed text-white text-sm font-semibold py-2.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                    {submitting ? 'Submitting...' : 'Submit Report'}
+                    {submitting ? "Submitting..." : "Submit Report"}
                   </button>
                 </form>
               )}
@@ -389,7 +590,7 @@ export default function Home() {
                   <Calendar size={14} />
                   Recent Alerts ({filteredReports.length})
                 </h3>
-                
+
                 {loading ? (
                   <div className="flex flex-col items-center justify-center py-12 text-zinc-500 space-y-2">
                     <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
@@ -403,39 +604,45 @@ export default function Home() {
                   <div className="space-y-3">
                     {filteredReports.map((report) => {
                       const isFocused = focusedReport?.id === report.id;
-                      
+
                       // Category specific styling
                       let cardStyles = "";
                       let accentColor = "";
                       let badgeText = "";
                       let icon = null;
-                      
-                      if (report.type === 'mining') {
-                        cardStyles = isFocused 
-                          ? "bg-red-500/10 border-red-500/60 shadow-lg shadow-red-950/20 ring-1 ring-red-500/30" 
+
+                      if (report.type === "mining") {
+                        cardStyles = isFocused
+                          ? "bg-red-500/10 border-red-500/60 shadow-lg shadow-red-950/20 ring-1 ring-red-500/30"
                           : "bg-zinc-900/40 border-white/5 hover:border-red-500/30 hover:bg-red-950/5";
                         accentColor = "bg-red-500";
                         badgeText = "Illegal Mining";
-                        icon = <ShieldAlert className="text-red-500 w-5 h-5 flex-shrink-0 group-hover:animate-pulse" />;
-                      } else if (report.type === 'pollution') {
+                        icon = (
+                          <ShieldAlert className="text-red-500 w-5 h-5 flex-shrink-0 group-hover:animate-pulse" />
+                        );
+                      } else if (report.type === "pollution") {
                         cardStyles = isFocused
                           ? "bg-amber-500/10 border-amber-500/60 shadow-lg shadow-amber-950/20 ring-1 ring-amber-500/30"
                           : "bg-zinc-900/40 border-white/5 hover:border-amber-500/30 hover:bg-amber-950/5";
                         accentColor = "bg-amber-500";
                         badgeText = "River Pollution";
-                        icon = <AlertTriangle className="text-amber-500 w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />;
+                        icon = (
+                          <AlertTriangle className="text-amber-500 w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                        );
                       } else {
                         cardStyles = isFocused
                           ? "bg-blue-500/10 border-blue-500/60 shadow-lg shadow-blue-950/20 ring-1 ring-blue-500/30"
                           : "bg-zinc-900/40 border-white/5 hover:border-blue-500/30 hover:bg-blue-950/5";
                         accentColor = "bg-blue-500";
                         badgeText = "Water Flooding";
-                        icon = <Droplets className="text-blue-500 w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />;
+                        icon = (
+                          <Droplets className="text-blue-500 w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                        );
                       }
 
                       return (
-                        <div 
-                          key={report.id} 
+                        <div
+                          key={report.id}
                           onClick={() => {
                             setFocusedReport(report);
                             setFocusedZone(null);
@@ -443,13 +650,25 @@ export default function Home() {
                           className={`cursor-pointer border rounded-xl p-4 transition-all duration-300 shadow-md group relative overflow-hidden ${cardStyles}`}
                         >
                           {/* Status accent border */}
-                          <div className={`absolute top-0 left-0 bottom-0 w-1 ${accentColor}`} />
-                          
+                          <div
+                            className={`absolute top-0 left-0 bottom-0 w-1 ${accentColor}`}
+                          />
+
                           <div className="flex items-start gap-3 pl-1">
                             {icon}
                             <div className="space-y-1.5 min-w-0 flex-1">
                               <div className="flex items-center justify-between gap-2">
-                                <span className="text-[10px] font-extrabold uppercase tracking-wider" style={{ color: report.type === 'mining' ? '#ef4444' : report.type === 'pollution' ? '#f59e0b' : '#3b82f6' }}>
+                                <span
+                                  className="text-[10px] font-extrabold uppercase tracking-wider"
+                                  style={{
+                                    color:
+                                      report.type === "mining"
+                                        ? "#ef4444"
+                                        : report.type === "pollution"
+                                          ? "#f59e0b"
+                                          : "#3b82f6",
+                                  }}
+                                >
                                   {badgeText}
                                 </span>
                                 <span className="text-[10px] text-zinc-500 font-medium">
@@ -460,17 +679,20 @@ export default function Home() {
                                 {report.description}
                               </p>
                               <div className="flex items-center justify-between gap-2 pt-1 border-t border-white/5">
-                                <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold border uppercase tracking-wider ${
-                                  report.status === 'verified'
-                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                    : report.status === 'dismissed'
-                                    ? 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20'
-                                    : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                                }`}>
+                                <span
+                                  className={`text-[9px] px-2 py-0.5 rounded-full font-bold border uppercase tracking-wider ${
+                                    report.status === "verified"
+                                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                      : report.status === "dismissed"
+                                        ? "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
+                                        : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                  }`}
+                                >
                                   {report.status}
                                 </span>
                                 <span className="text-[9px] text-zinc-400 font-mono">
-                                  {report.latitude.toFixed(4)}, {report.longitude.toFixed(4)}
+                                  {report.latitude.toFixed(4)},{" "}
+                                  {report.longitude.toFixed(4)}
                                 </span>
                               </div>
                             </div>
@@ -482,7 +704,7 @@ export default function Home() {
                 )}
               </div>
             </>
-          ) : (
+          ) : activeTab === "flood_risk" ? (
             /* Flood Risk Assessment Tab Content */
             <div className="space-y-4">
               <div className="bg-zinc-900 border border-white/5 rounded-2xl p-4 shadow-xl">
@@ -491,100 +713,102 @@ export default function Home() {
                   AI Risk Assessment
                 </h2>
                 <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-                  Top-down predictive algorithms calculate community-level vulnerability index scores based on NDVI clearing data, elevation profiles, and precipitation.
+                  Top-down predictive algorithms calculate community-level
+                  vulnerability index scores based on NDVI clearing data,
+                  elevation profiles, and precipitation.
                 </p>
 
                 {/* Sub-toggle Row */}
                 <div className="grid grid-cols-3 gap-1 bg-zinc-950 p-1 border border-white/5 rounded-xl mt-3">
                   <button
-                    onClick={() => setActiveRiskType('flood')}
-                    className={`py-1 text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center ${
-                      activeRiskType === 'flood'
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'text-zinc-500 hover:text-zinc-300'
-                    }`}
+                    onClick={() => setActiveRiskType("flood")}
+                    className={`py-1 text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center ${activeRiskType === "flood" ? "bg-blue-600 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"}`}
                   >
                     Flood Risk
                   </button>
                   <button
-                    onClick={() => setActiveRiskType('mining')}
-                    className={`py-1 text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center ${
-                      activeRiskType === 'mining'
-                        ? 'bg-red-600 text-white shadow-sm'
-                        : 'text-zinc-500 hover:text-zinc-300'
-                    }`}
+                    onClick={() => setActiveRiskType("mining")}
+                    className={`py-1 text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center ${activeRiskType === "mining" ? "bg-red-600 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"}`}
                   >
-                    Mining Proximity
+                    Mining
                   </button>
                   <button
-                    onClick={() => setActiveRiskType('pollution')}
-                    className={`py-1 text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center ${
-                      activeRiskType === 'pollution'
-                        ? 'bg-amber-600 text-white shadow-sm'
-                        : 'text-zinc-500 hover:text-zinc-300'
-                    }`}
+                    onClick={() => setActiveRiskType("pollution")}
+                    className={`py-1 text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center ${activeRiskType === "pollution" ? "bg-amber-600 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"}`}
                   >
-                    Pollution Index
+                    Pollution
                   </button>
                 </div>
               </div>
 
               <div className="space-y-3">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
-                  <Activity size={14} />
-                  Monitored Communities ({floodRisks.length})
+                  <Activity size={14} /> Monitored Communities (
+                  {floodRisks.length})
                 </h3>
-                
                 {floodRisks.length === 0 ? (
                   <div className="text-center py-12 text-xs text-zinc-500 border border-dashed border-white/5 rounded-xl">
-                    No community risk profiles found. Run the AI detection script to seed data.
+                    No community risk profiles found. Run the AI detection
+                    script to seed data.
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {floodRisks.map((risk) => {
                       const isFocused = focusedZone?.id === risk.id;
-                      
                       let score = risk.risk_score;
                       let status = risk.status;
-                      
-                      if (activeRiskType === 'mining') {
+                      if (activeRiskType === "mining") {
                         score = risk.mining_risk_score ?? 0;
-                        status = risk.mining_status ?? 'low';
-                      } else if (activeRiskType === 'pollution') {
+                        status = risk.mining_status ?? "low";
+                      } else if (activeRiskType === "pollution") {
                         score = risk.pollution_risk_score ?? 0;
-                        status = risk.pollution_status ?? 'low';
+                        status = risk.pollution_status ?? "low";
                       }
 
-                      let cardStyles = "";
-                      let badgeColor = "";
-                      let riskText = "";
-                      
-                      if (status === 'high') {
-                        cardStyles = isFocused 
-                          ? "bg-red-500/10 border-red-500/60 shadow-lg shadow-red-950/20 ring-1 ring-red-500/30" 
-                          : "bg-zinc-900/40 border-white/5 hover:border-red-500/30 hover:bg-red-950/5";
-                        badgeColor = "text-red-400 border-red-500/20 bg-red-500/10";
-                        riskText = "CRITICAL RISK";
-                      } else if (status === 'medium') {
-                        cardStyles = isFocused
-                          ? "bg-amber-500/10 border-amber-500/60 shadow-lg shadow-amber-950/20 ring-1 ring-amber-500/30"
-                          : "bg-zinc-900/40 border-white/5 hover:border-amber-500/30 hover:bg-amber-950/5";
-                        badgeColor = "text-amber-400 border-amber-500/20 bg-amber-500/10";
-                        riskText = "MODERATE RISK";
-                      } else {
-                        cardStyles = isFocused
-                          ? "bg-blue-500/10 border-blue-500/60 shadow-lg shadow-blue-950/20 ring-1 ring-blue-500/30"
-                          : "bg-zinc-900/40 border-white/5 hover:border-blue-500/30 hover:bg-blue-950/5";
-                        badgeColor = "text-emerald-400 border-emerald-500/20 bg-emerald-500/10";
-                        riskText = "LOW RISK";
-                      }
-
-                      let labelText = "Flood Factor";
-                      if (activeRiskType === 'mining') labelText = "Proximity Index";
-                      else if (activeRiskType === 'pollution') labelText = "Sediment Index";
+                      const cardStyles = isFocused
+                        ? status === "high"
+                          ? "bg-red-500/10 border-red-500/60 ring-1 ring-red-500/30"
+                          : status === "medium"
+                            ? "bg-amber-500/10 border-amber-500/60 ring-1 ring-amber-500/30"
+                            : "bg-blue-500/10 border-blue-500/60 ring-1 ring-blue-500/30"
+                        : status === "high"
+                          ? "bg-zinc-900/40 border-white/5 hover:border-red-500/30"
+                          : status === "medium"
+                            ? "bg-zinc-900/40 border-white/5 hover:border-amber-500/30"
+                            : "bg-zinc-900/40 border-white/5 hover:border-blue-500/30";
+                      const badgeColor =
+                        status === "high"
+                          ? "text-red-400 border-red-500/20 bg-red-500/10"
+                          : status === "medium"
+                            ? "text-amber-400 border-amber-500/20 bg-amber-500/10"
+                            : "text-emerald-400 border-emerald-500/20 bg-emerald-500/10";
+                      const riskText =
+                        status === "high"
+                          ? "CRITICAL"
+                          : status === "medium"
+                            ? "MODERATE"
+                            : "LOW";
+                      const accentBar =
+                        status === "high"
+                          ? "bg-red-500"
+                          : status === "medium"
+                            ? "bg-amber-500"
+                            : "bg-emerald-500";
+                      const scoreColor =
+                        status === "high"
+                          ? "text-red-500"
+                          : status === "medium"
+                            ? "text-amber-500"
+                            : "text-emerald-500";
+                      const labelText =
+                        activeRiskType === "mining"
+                          ? "Proximity Index"
+                          : activeRiskType === "pollution"
+                            ? "Sediment Index"
+                            : "Flood Factor";
 
                       return (
-                        <div 
+                        <div
                           key={risk.id}
                           onClick={() => {
                             setFocusedZone(risk);
@@ -592,34 +816,39 @@ export default function Home() {
                           }}
                           className={`cursor-pointer border rounded-xl p-4 transition-all duration-300 shadow-md group relative overflow-hidden ${cardStyles}`}
                         >
-                          <div className={`absolute top-0 left-0 bottom-0 w-1 ${
-                            status === 'high' ? 'bg-red-500' : status === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
-                          }`} />
-                          
+                          <div
+                            className={`absolute top-0 left-0 bottom-0 w-1 ${accentBar}`}
+                          />
                           <div className="flex items-start justify-between gap-2 pl-1">
                             <div className="space-y-1.5 min-w-0 flex-1">
                               <div className="flex items-center justify-between gap-2">
                                 <span className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">
                                   {risk.community}
                                 </span>
-                                <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold border uppercase tracking-wider ${badgeColor}`}>
+                                <span
+                                  className={`text-[9px] px-2 py-0.5 rounded-full font-bold border uppercase tracking-wider ${badgeColor}`}
+                                >
                                   {riskText}
                                 </span>
                               </div>
-                              
                               <div className="flex items-center justify-between gap-4 pt-1.5 border-t border-white/5">
                                 <div className="space-y-0.5">
-                                  <span className="text-[9px] text-zinc-500 block uppercase font-medium">{labelText}</span>
-                                  <span className={`text-base font-extrabold ${
-                                    status === 'high' ? 'text-red-500' : status === 'medium' ? 'text-amber-500' : 'text-emerald-500'
-                                  }`}>
+                                  <span className="text-[9px] text-zinc-500 block uppercase font-medium">
+                                    {labelText}
+                                  </span>
+                                  <span
+                                    className={`text-base font-extrabold ${scoreColor}`}
+                                  >
                                     {(score * 100).toFixed(0)}%
                                   </span>
                                 </div>
                                 <div className="text-right">
-                                  <span className="text-[9px] text-zinc-500 block uppercase font-medium">Location</span>
+                                  <span className="text-[9px] text-zinc-500 block uppercase font-medium">
+                                    Location
+                                  </span>
                                   <span className="text-[10px] text-zinc-400 font-mono">
-                                    {risk.latitude.toFixed(3)}, {risk.longitude.toFixed(3)}
+                                    {risk.latitude.toFixed(3)},{" "}
+                                    {risk.longitude.toFixed(3)}
                                   </span>
                                 </div>
                               </div>
@@ -632,14 +861,230 @@ export default function Home() {
                 )}
               </div>
             </div>
+          ) : (
+            /* Location Inspect Tab Content */
+            <div className="space-y-4">
+              <div className="bg-zinc-900 border border-white/5 rounded-2xl p-4 shadow-xl">
+                <h2 className="text-sm font-semibold text-zinc-200 flex items-center gap-2">
+                  <Search className="text-violet-400" size={16} />
+                  Location Risk Inspector
+                </h2>
+                <p className="text-xs text-zinc-400 mt-1.5 leading-relaxed">
+                  Type any town or area in Ghana to get live weather conditions
+                  and environmental risk scores.
+                </p>
+                <form
+                  onSubmit={handleLocationSearch}
+                  className="mt-3 flex gap-2"
+                >
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="e.g. Tarkwa, Obuasi, Kumasi..."
+                    className="flex-1 bg-zinc-950 border border-white/10 focus:border-violet-500/60 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none transition-all"
+                  />
+                  <button
+                    type="submit"
+                    disabled={searchLoading || !searchQuery.trim()}
+                    className="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    {searchLoading ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Search size={14} />
+                    )}
+                  </button>
+                </form>
+              </div>
+
+              {searchError && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-xs text-red-400 flex items-start gap-2">
+                  <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
+                  {searchError}
+                </div>
+              )}
+
+              {searchLoading && (
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="bg-zinc-900/50 border border-white/5 rounded-xl p-4 animate-pulse"
+                    >
+                      <div className="h-3 bg-zinc-800 rounded w-1/2 mb-2" />
+                      <div className="h-2 bg-zinc-800 rounded w-3/4" />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {searchResult && !searchLoading && (
+                <div className="space-y-3">
+                  <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-3">
+                    <div className="flex items-start gap-2">
+                      <MapPin
+                        size={14}
+                        className="text-violet-400 flex-shrink-0 mt-0.5"
+                      />
+                      <div>
+                        <p className="text-xs font-bold text-white leading-tight">
+                          {searchResult.name}
+                        </p>
+                        <p className="text-[10px] text-zinc-500 font-mono mt-0.5">
+                          {searchResult.latitude.toFixed(4)},{" "}
+                          {searchResult.longitude.toFixed(4)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-zinc-900 border border-white/5 rounded-xl p-3">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">
+                      Live Weather
+                    </span>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      <div className="text-center">
+                        <Droplets
+                          size={16}
+                          className="text-blue-400 mx-auto mb-1"
+                        />
+                        <p className="text-xs font-bold text-white">
+                          {searchResult.rainfall.toFixed(1)}mm
+                        </p>
+                        <p className="text-[9px] text-zinc-500">7-day rain</p>
+                      </div>
+                      <div className="text-center">
+                        <Thermometer
+                          size={16}
+                          className="text-orange-400 mx-auto mb-1"
+                        />
+                        <p className="text-xs font-bold text-white">
+                          {searchResult.temperature.toFixed(1)}°C
+                        </p>
+                        <p className="text-[9px] text-zinc-500">Temperature</p>
+                      </div>
+                      <div className="text-center">
+                        <Wind
+                          size={16}
+                          className="text-zinc-400 mx-auto mb-1"
+                        />
+                        <p className="text-xs font-bold text-white">
+                          {searchResult.windspeed.toFixed(0)} km/h
+                        </p>
+                        <p className="text-[9px] text-zinc-500">Wind</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">
+                      Risk Assessment
+                    </span>
+                    {(
+                      [
+                        {
+                          label: "Flood Risk",
+                          score: searchResult.floodRisk,
+                          status: searchResult.floodStatus,
+                          color: "blue",
+                        },
+                        {
+                          label: "Mining Proximity",
+                          score: searchResult.miningRisk,
+                          status: searchResult.miningStatus,
+                          color: "red",
+                        },
+                        {
+                          label: "River Pollution",
+                          score: searchResult.pollutionRisk,
+                          status: searchResult.pollutionStatus,
+                          color: "amber",
+                        },
+                      ] as const
+                    ).map(({ label, score, status, color }) => {
+                      const barColor =
+                        color === "red"
+                          ? "bg-red-500"
+                          : color === "amber"
+                            ? "bg-amber-500"
+                            : "bg-blue-500";
+                      const textColor =
+                        color === "red"
+                          ? "text-red-400"
+                          : color === "amber"
+                            ? "text-amber-400"
+                            : "text-blue-400";
+                      const badgeStyles =
+                        status === "high"
+                          ? "bg-red-500/10 text-red-400 border-red-500/20"
+                          : status === "medium"
+                            ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                            : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                      return (
+                        <div
+                          key={label}
+                          className="bg-zinc-900/60 border border-white/5 rounded-xl p-3 space-y-2"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-semibold text-zinc-300">
+                              {label}
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span
+                                className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold border uppercase ${badgeStyles}`}
+                              >
+                                {status} risk
+                              </span>
+                              <span
+                                className={`text-sm font-black ${textColor}`}
+                              >
+                                {(score * 100).toFixed(0)}%
+                              </span>
+                            </div>
+                          </div>
+                          <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-700 ${barColor}`}
+                              style={{ width: `${(score * 100).toFixed(0)}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="bg-zinc-900 border border-white/5 rounded-xl p-3 text-[10px] text-zinc-400 flex items-center justify-between">
+                    <span>Nearest galamsey report:</span>
+                    <span className="font-bold text-white">
+                      {searchResult.miningDistance > 200
+                        ? "None reported"
+                        : `${searchResult.miningDistance.toFixed(1)} km away`}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() =>
+                      setSearchFocused({
+                        latitude: searchResult.latitude,
+                        longitude: searchResult.longitude,
+                      })
+                    }
+                    className="w-full bg-violet-600/20 hover:bg-violet-600/30 border border-violet-500/30 text-violet-300 text-xs font-semibold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Crosshair size={13} /> Center map on this location
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </aside>
 
       {/* Main Content - Map */}
       <main className="flex-1 relative p-4 bg-zinc-950">
-        <Map 
-          reports={filteredReports} 
+        <Map
+          reports={filteredReports}
           isReporting={isReporting}
           selectedLocation={selectedLocation}
           onSelectLocation={handleSelectLocation}
@@ -648,6 +1093,7 @@ export default function Home() {
           focusedZone={focusedZone}
           floodRisks={floodRisks}
           activeRiskType={activeRiskType}
+          searchFocused={searchFocused}
           theme="dark"
         />
       </main>

@@ -40,6 +40,7 @@ interface MapProps {
   focusedZone: FloodRiskZone | null;
   floodRisks: FloodRiskZone[];
   activeRiskType: 'flood' | 'mining' | 'pollution';
+  searchFocused: { latitude: number; longitude: number } | null;
   theme: 'light' | 'dark';
 }
 
@@ -53,6 +54,7 @@ export default function Map({
   focusedZone,
   floodRisks = [],
   activeRiskType = 'flood',
+  searchFocused = null,
   theme 
 }: MapProps) {
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
@@ -100,6 +102,18 @@ export default function Map({
       setPopupZone(focusedZone);
     }
   }, [focusedZone]);
+
+  // Zoom to searched location
+  React.useEffect(() => {
+    if (searchFocused && mapRef.current) {
+      mapRef.current.flyTo({
+        center: [searchFocused.longitude, searchFocused.latitude],
+        zoom: 12,
+        duration: 2200,
+        essential: true
+      });
+    }
+  }, [searchFocused]);
 
   // Southwest and Northeast bounds for Ghana
   const ghanaBounds: [[number, number], [number, number]] = [
