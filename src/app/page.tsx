@@ -348,55 +348,55 @@ export default function Home() {
   });
 
   return (
-    <div className="flex h-screen bg-zinc-950 text-white overflow-hidden font-sans">
+    <div className="flex flex-col lg:flex-row h-screen bg-zinc-950 text-white overflow-hidden font-sans">
       {/* Sidebar */}
-      <aside className="w-96 border-r border-white/10 flex flex-col bg-zinc-900/50 backdrop-blur-xl">
+      <aside className="w-full lg:w-96 lg:border-r border-b lg:border-b-0 border-white/10 flex flex-col bg-zinc-900/50 backdrop-blur-xl max-h-[40vh] lg:max-h-screen overflow-y-auto lg:overflow-y-auto">
         {/* Header */}
-        <div className="p-6 border-b border-white/10">
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Activity className="text-emerald-500 w-6 h-6 animate-pulse" />
+        <div className="p-3 lg:p-6 border-b border-white/10">
+          <h1 className="text-lg lg:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            <Activity className="text-emerald-500 w-5 lg:w-6 h-5 lg:h-6 animate-pulse" />
             Terra Watch
           </h1>
-          <p className="text-sm text-zinc-400 mt-1">
+          <p className="text-xs lg:text-sm text-zinc-400 mt-1">
             Ghana Illegal Mining & Flood Control
           </p>
         </div>
 
         {/* Scrollable content area */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-3 lg:p-6 space-y-3 lg:space-y-6">
           {/* Stats Summary Panel */}
-          <div className="grid grid-cols-3 gap-2.5">
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-2 text-center transition-all hover:bg-red-500/15">
-              <span className="text-[10px] font-bold text-red-400 block uppercase tracking-wider animate-pulse">
+          <div className="grid grid-cols-3 gap-1.5 lg:gap-2.5">
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg lg:rounded-xl p-1.5 lg:p-2 text-center transition-all hover:bg-red-500/15">
+              <span className="text-[8px] lg:text-[10px] font-bold text-red-400 block uppercase tracking-wider animate-pulse">
                 Mining
               </span>
-              <span className="text-xl font-extrabold text-red-500">
+              <span className="text-lg lg:text-xl font-extrabold text-red-500">
                 {miningCount}
               </span>
             </div>
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-2 text-center transition-all hover:bg-amber-500/15">
-              <span className="text-[10px] font-bold text-amber-400 block uppercase tracking-wider">
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg lg:rounded-xl p-1.5 lg:p-2 text-center transition-all hover:bg-amber-500/15">
+              <span className="text-[8px] lg:text-[10px] font-bold text-amber-400 block uppercase tracking-wider">
                 Pollution
               </span>
-              <span className="text-xl font-extrabold text-amber-500">
+              <span className="text-lg lg:text-xl font-extrabold text-amber-500">
                 {pollutionCount}
               </span>
             </div>
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-2 text-center transition-all hover:bg-blue-500/15">
-              <span className="text-[10px] font-bold text-blue-400 block uppercase tracking-wider">
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg lg:rounded-xl p-1.5 lg:p-2 text-center transition-all hover:bg-blue-500/15">
+              <span className="text-[8px] lg:text-[10px] font-bold text-blue-400 block uppercase tracking-wider">
                 Flooding
               </span>
-              <span className="text-xl font-extrabold text-blue-500">
+              <span className="text-lg lg:text-xl font-extrabold text-blue-500">
                 {floodingCount}
               </span>
             </div>
           </div>
 
           {/* Tab Navigation */}
-          <div className="grid grid-cols-3 bg-zinc-950 p-1 border border-white/5 rounded-xl gap-1">
+          <div className="grid grid-cols-3 bg-zinc-950 p-0.5 lg:p-1 border border-white/5 rounded-lg lg:rounded-xl gap-0.5 lg:gap-1">
             <button
               onClick={() => setActiveTab("reports")}
-              className={`py-2 text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center ${
+              className={`py-1 lg:py-2 text-[7px] lg:text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center ${
                 activeTab === "reports"
                   ? "bg-emerald-600 text-white shadow-md"
                   : "text-zinc-500 hover:text-zinc-300"
@@ -406,7 +406,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setActiveTab("flood_risk")}
-              className={`py-2 text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center ${
+              className={`py-1 lg:py-2 text-[7px] lg:text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center ${
                 activeTab === "flood_risk"
                   ? "bg-blue-600 text-white shadow-md"
                   : "text-zinc-500 hover:text-zinc-300"
@@ -416,28 +416,29 @@ export default function Home() {
             </button>
             <button
               onClick={() => setActiveTab("search")}
-              className={`py-2 text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center flex items-center justify-center gap-1 ${
+              className={`py-1 lg:py-2 text-[7px] lg:text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center flex items-center justify-center gap-0.5 lg:gap-1 ${
                 activeTab === "search"
                   ? "bg-violet-600 text-white shadow-md"
                   : "text-zinc-500 hover:text-zinc-300"
               }`}
             >
-              <Search size={10} />
-              Inspect
+              <Search size={8} className="lg:hidden" />
+              <Search size={10} className="hidden lg:block" />
+              <span className="hidden sm:inline">Inspect</span>
             </button>
           </div>
 
           {activeTab === "reports" ? (
             <>
               {/* Category Filter Tabs */}
-              <div className="space-y-2">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">
-                  Filter Alerts
+              <div className="space-y-1.5 lg:space-y-2">
+                <label className="text-[8px] lg:text-[10px] uppercase font-bold tracking-wider text-zinc-400">
+                  Filter
                 </label>
-                <div className="grid grid-cols-4 gap-1 bg-zinc-950 p-1 border border-white/5 rounded-xl">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-0.5 lg:gap-1 bg-zinc-950 p-0.5 lg:p-1 border border-white/5 rounded-lg lg:rounded-xl">
                   <button
                     onClick={() => setSelectedCategoryFilter("all")}
-                    className={`py-1 px-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
+                    className={`py-0.5 lg:py-1 px-1 lg:px-1.5 text-[7px] lg:text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
                       selectedCategoryFilter === "all"
                         ? "bg-zinc-800 text-white shadow-sm"
                         : "text-zinc-500 hover:text-zinc-300"
@@ -447,7 +448,7 @@ export default function Home() {
                   </button>
                   <button
                     onClick={() => setSelectedCategoryFilter("mining")}
-                    className={`py-1 px-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
+                    className={`py-0.5 lg:py-1 px-1 lg:px-1.5 text-[7px] lg:text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
                       selectedCategoryFilter === "mining"
                         ? "bg-red-500/20 text-red-400 border border-red-500/30"
                         : "text-zinc-500 hover:text-zinc-300"
@@ -457,7 +458,7 @@ export default function Home() {
                   </button>
                   <button
                     onClick={() => setSelectedCategoryFilter("pollution")}
-                    className={`py-1 px-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
+                    className={`py-0.5 lg:py-1 px-1 lg:px-1.5 text-[7px] lg:text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
                       selectedCategoryFilter === "pollution"
                         ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                         : "text-zinc-500 hover:text-zinc-300"
@@ -467,31 +468,33 @@ export default function Home() {
                   </button>
                   <button
                     onClick={() => setSelectedCategoryFilter("flooding")}
-                    className={`py-1 px-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
+                    className={`py-0.5 lg:py-1 px-1 lg:px-1.5 text-[7px] lg:text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
                       selectedCategoryFilter === "flooding"
                         ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
                         : "text-zinc-500 hover:text-zinc-300"
                     }`}
                   >
-                    Flooding
+                    Flood
                   </button>
                 </div>
               </div>
 
               {!isReporting ? (
                 /* Action Box when not reporting */
-                <div className="bg-zinc-900/80 border border-white/10 rounded-2xl p-4 shadow-xl">
-                  <h2 className="text-sm font-semibold text-zinc-200 flex items-center gap-2">
-                    <AlertCircle className="text-emerald-500" size={18} />
+                <div className="bg-zinc-900/80 border border-white/10 rounded-lg lg:rounded-2xl p-2.5 lg:p-4 shadow-xl">
+                  <h2 className="text-xs lg:text-sm font-semibold text-zinc-200 flex items-center gap-1.5 lg:gap-2">
+                    <AlertCircle
+                      className="text-emerald-500 w-3.5 lg:w-4.5 h-3.5 lg:h-4.5"
+                      size={14}
+                    />
                     Report Activity
                   </h2>
-                  <p className="text-xs text-zinc-400 mt-2 mb-4 leading-relaxed">
-                    Empower your community. Submit reports of illegal mining
-                    (galamsey), toxic river pollution, or localized flood risk.
+                  <p className="text-[10px] lg:text-xs text-zinc-400 mt-1.5 lg:mt-2 mb-2 lg:mb-4 leading-relaxed">
+                    Submit reports of mining, pollution, or floods.
                   </p>
                   <button
                     onClick={() => setIsReporting(true)}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-sm font-semibold py-2.5 px-4 rounded-xl transition-all duration-200 shadow-lg shadow-emerald-900/20 cursor-pointer"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs lg:text-sm font-semibold py-1.5 lg:py-2.5 px-3 lg:px-4 rounded-lg lg:rounded-xl transition-all duration-200 shadow-lg shadow-emerald-900/20 cursor-pointer"
                   >
                     Submit New Report
                   </button>
@@ -500,12 +503,15 @@ export default function Home() {
                 /* Form Box when reporting */
                 <form
                   onSubmit={handleSubmit}
-                  className="bg-zinc-900 border border-emerald-500/20 rounded-2xl p-4 shadow-2xl space-y-4 animate-fadeIn"
+                  className="bg-zinc-900 border border-emerald-500/20 rounded-lg lg:rounded-2xl p-2.5 lg:p-4 shadow-2xl space-y-2.5 lg:space-y-4 animate-fadeIn"
                 >
-                  <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                    <h2 className="text-sm font-semibold text-emerald-400 flex items-center gap-2">
-                      <Activity size={18} />
-                      New Citizen Report
+                  <div className="flex items-center justify-between border-b border-white/5 pb-1.5 lg:pb-2">
+                    <h2 className="text-xs lg:text-sm font-semibold text-emerald-400 flex items-center gap-1 lg:gap-2">
+                      <Activity
+                        size={14}
+                        className="w-3.5 lg:w-4.5 h-3.5 lg:h-4.5"
+                      />
+                      New Report
                     </h2>
                     <button
                       type="button"
@@ -513,7 +519,7 @@ export default function Home() {
                         setIsReporting(false);
                         setSelectedLocation(null);
                       }}
-                      className="text-xs text-zinc-500 hover:text-zinc-300 cursor-pointer"
+                      className="text-[10px] lg:text-xs text-zinc-500 hover:text-zinc-300 cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -585,19 +591,21 @@ export default function Home() {
               )}
 
               {/* Recent Alerts List */}
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
-                  <Calendar size={14} />
-                  Recent Alerts ({filteredReports.length})
+              <div className="space-y-2 lg:space-y-3">
+                <h3 className="text-[10px] lg:text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1 lg:gap-2">
+                  <Calendar size={12} className="lg:w-[14px] lg:h-[14px]" />
+                  Recent ({filteredReports.length})
                 </h3>
 
                 {loading ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-zinc-500 space-y-2">
-                    <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
-                    <span className="text-xs">Fetching alerts...</span>
+                  <div className="flex flex-col items-center justify-center py-8 lg:py-12 text-zinc-500 space-y-1.5 lg:space-y-2">
+                    <Loader2 className="w-5 lg:w-6 h-5 lg:h-6 animate-spin text-emerald-500" />
+                    <span className="text-[10px] lg:text-xs">
+                      Fetching alerts...
+                    </span>
                   </div>
                 ) : filteredReports.length === 0 ? (
-                  <div className="text-center py-12 text-xs text-zinc-500 border border-dashed border-white/5 rounded-xl">
+                  <div className="text-center py-8 lg:py-12 text-xs text-zinc-500 border border-dashed border-white/5 rounded-lg lg:rounded-xl">
                     No active alerts match this filter.
                   </div>
                 ) : (
@@ -618,7 +626,7 @@ export default function Home() {
                         accentColor = "bg-red-500";
                         badgeText = "Illegal Mining";
                         icon = (
-                          <ShieldAlert className="text-red-500 w-5 h-5 flex-shrink-0 group-hover:animate-pulse" />
+                          <ShieldAlert className="text-red-500 w-4 lg:w-5 h-4 lg:h-5 flex-shrink-0 group-hover:animate-pulse" />
                         );
                       } else if (report.type === "pollution") {
                         cardStyles = isFocused
@@ -627,7 +635,7 @@ export default function Home() {
                         accentColor = "bg-amber-500";
                         badgeText = "River Pollution";
                         icon = (
-                          <AlertTriangle className="text-amber-500 w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                          <AlertTriangle className="text-amber-500 w-4 lg:w-5 h-4 lg:h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
                         );
                       } else {
                         cardStyles = isFocused
@@ -636,7 +644,7 @@ export default function Home() {
                         accentColor = "bg-blue-500";
                         badgeText = "Water Flooding";
                         icon = (
-                          <Droplets className="text-blue-500 w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                          <Droplets className="text-blue-500 w-4 lg:w-5 h-4 lg:h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
                         );
                       }
 
@@ -647,19 +655,19 @@ export default function Home() {
                             setFocusedReport(report);
                             setFocusedZone(null);
                           }}
-                          className={`cursor-pointer border rounded-xl p-4 transition-all duration-300 shadow-md group relative overflow-hidden ${cardStyles}`}
+                          className={`cursor-pointer border rounded-lg lg:rounded-xl p-2.5 lg:p-4 transition-all duration-300 shadow-md group relative overflow-hidden ${cardStyles}`}
                         >
                           {/* Status accent border */}
                           <div
                             className={`absolute top-0 left-0 bottom-0 w-1 ${accentColor}`}
                           />
 
-                          <div className="flex items-start gap-3 pl-1">
+                          <div className="flex items-start gap-2 lg:gap-3 pl-0.5 lg:pl-1">
                             {icon}
-                            <div className="space-y-1.5 min-w-0 flex-1">
-                              <div className="flex items-center justify-between gap-2">
+                            <div className="space-y-1 lg:space-y-1.5 min-w-0 flex-1">
+                              <div className="flex items-center justify-between gap-1 lg:gap-2">
                                 <span
-                                  className="text-[10px] font-extrabold uppercase tracking-wider"
+                                  className="text-[8px] lg:text-[10px] font-extrabold uppercase tracking-wider"
                                   style={{
                                     color:
                                       report.type === "mining"
@@ -671,16 +679,16 @@ export default function Home() {
                                 >
                                   {badgeText}
                                 </span>
-                                <span className="text-[10px] text-zinc-500 font-medium">
+                                <span className="text-[7px] lg:text-[10px] text-zinc-500 font-medium whitespace-nowrap">
                                   {formatTimeAgo(report.created_at)}
                                 </span>
                               </div>
-                              <p className="text-sm text-zinc-200 leading-snug break-words">
+                              <p className="text-xs lg:text-sm text-zinc-200 leading-snug break-words">
                                 {report.description}
                               </p>
-                              <div className="flex items-center justify-between gap-2 pt-1 border-t border-white/5">
+                              <div className="flex items-center justify-between gap-1 lg:gap-2 pt-0.5 lg:pt-1 border-t border-white/5">
                                 <span
-                                  className={`text-[9px] px-2 py-0.5 rounded-full font-bold border uppercase tracking-wider ${
+                                  className={`text-[7px] lg:text-[9px] px-1.5 lg:px-2 py-0.5 rounded-full font-bold border uppercase tracking-wider ${
                                     report.status === "verified"
                                       ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                                       : report.status === "dismissed"
@@ -690,9 +698,9 @@ export default function Home() {
                                 >
                                   {report.status}
                                 </span>
-                                <span className="text-[9px] text-zinc-400 font-mono">
-                                  {report.latitude.toFixed(4)},{" "}
-                                  {report.longitude.toFixed(4)}
+                                <span className="text-[7px] lg:text-[9px] text-zinc-400 font-mono truncate">
+                                  {report.latitude.toFixed(3)},{" "}
+                                  {report.longitude.toFixed(3)}
                                 </span>
                               </div>
                             </div>
@@ -706,29 +714,30 @@ export default function Home() {
             </>
           ) : activeTab === "flood_risk" ? (
             /* Flood Risk Assessment Tab Content */
-            <div className="space-y-4">
-              <div className="bg-zinc-900 border border-white/5 rounded-2xl p-4 shadow-xl">
-                <h2 className="text-sm font-semibold text-zinc-200 flex items-center gap-2">
-                  <Activity className="text-blue-500 animate-pulse" size={18} />
-                  AI Risk Assessment
+            <div className="space-y-2.5 lg:space-y-4">
+              <div className="bg-zinc-900 border border-white/5 rounded-lg lg:rounded-2xl p-2.5 lg:p-4 shadow-xl">
+                <h2 className="text-xs lg:text-sm font-semibold text-zinc-200 flex items-center gap-1 lg:gap-2">
+                  <Activity
+                    className="text-blue-500 animate-pulse w-3.5 lg:w-4.5 h-3.5 lg:h-4.5"
+                    size={14}
+                  />
+                  AI Assessment
                 </h2>
-                <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-                  Top-down predictive algorithms calculate community-level
-                  vulnerability index scores based on NDVI clearing data,
-                  elevation profiles, and precipitation.
+                <p className="text-[10px] lg:text-xs text-zinc-400 mt-1.5 lg:mt-2 leading-relaxed">
+                  Community vulnerability scores based on environmental data.
                 </p>
 
                 {/* Sub-toggle Row */}
-                <div className="grid grid-cols-3 gap-1 bg-zinc-950 p-1 border border-white/5 rounded-xl mt-3">
+                <div className="grid grid-cols-3 gap-0.5 lg:gap-1 bg-zinc-950 p-0.5 lg:p-1 border border-white/5 rounded-lg lg:rounded-xl mt-2 lg:mt-3">
                   <button
                     onClick={() => setActiveRiskType("flood")}
-                    className={`py-1 text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center ${activeRiskType === "flood" ? "bg-blue-600 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"}`}
+                    className={`py-0.5 lg:py-1 text-[7px] lg:text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center ${activeRiskType === "flood" ? "bg-blue-600 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"}`}
                   >
-                    Flood Risk
+                    Flood
                   </button>
                   <button
                     onClick={() => setActiveRiskType("mining")}
-                    className={`py-1 text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center ${activeRiskType === "mining" ? "bg-red-600 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"}`}
+                    className={`py-0.5 lg:py-1 text-[7px] lg:text-[10px] font-bold rounded-lg transition-all cursor-pointer text-center ${activeRiskType === "mining" ? "bg-red-600 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"}`}
                   >
                     Mining
                   </button>
@@ -741,18 +750,17 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
-                  <Activity size={14} /> Monitored Communities (
-                  {floodRisks.length})
+              <div className="space-y-2 lg:space-y-3">
+                <h3 className="text-[10px] lg:text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1 lg:gap-2">
+                  <Activity size={12} className="lg:w-[14px] lg:h-[14px]" />{" "}
+                  Communities ({floodRisks.length})
                 </h3>
                 {floodRisks.length === 0 ? (
-                  <div className="text-center py-12 text-xs text-zinc-500 border border-dashed border-white/5 rounded-xl">
-                    No community risk profiles found. Run the AI detection
-                    script to seed data.
+                  <div className="text-center py-8 lg:py-12 text-xs text-zinc-500 border border-dashed border-white/5 rounded-lg lg:rounded-xl">
+                    No risk profiles found. Run AI script.
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-2 lg:space-y-3">
                     {floodRisks.map((risk) => {
                       const isFocused = focusedZone?.id === risk.id;
                       let score = risk.risk_score;
@@ -814,41 +822,41 @@ export default function Home() {
                             setFocusedZone(risk);
                             setFocusedReport(null);
                           }}
-                          className={`cursor-pointer border rounded-xl p-4 transition-all duration-300 shadow-md group relative overflow-hidden ${cardStyles}`}
+                          className={`cursor-pointer border rounded-lg lg:rounded-xl p-2.5 lg:p-4 transition-all duration-300 shadow-md group relative overflow-hidden ${cardStyles}`}
                         >
                           <div
                             className={`absolute top-0 left-0 bottom-0 w-1 ${accentBar}`}
                           />
-                          <div className="flex items-start justify-between gap-2 pl-1">
-                            <div className="space-y-1.5 min-w-0 flex-1">
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">
+                          <div className="flex items-start justify-between gap-1.5 lg:gap-2 pl-0.5 lg:pl-1">
+                            <div className="space-y-1 lg:space-y-1.5 min-w-0 flex-1">
+                              <div className="flex items-center justify-between gap-1 lg:gap-2">
+                                <span className="text-xs lg:text-sm font-bold text-white group-hover:text-blue-400 transition-colors truncate">
                                   {risk.community}
                                 </span>
                                 <span
-                                  className={`text-[9px] px-2 py-0.5 rounded-full font-bold border uppercase tracking-wider ${badgeColor}`}
+                                  className={`text-[7px] lg:text-[9px] px-1.5 lg:px-2 py-0.5 rounded-full font-bold border uppercase tracking-wider whitespace-nowrap ${badgeColor}`}
                                 >
                                   {riskText}
                                 </span>
                               </div>
-                              <div className="flex items-center justify-between gap-4 pt-1.5 border-t border-white/5">
+                              <div className="flex items-center justify-between gap-2 lg:gap-4 pt-0.5 lg:pt-1.5 border-t border-white/5">
                                 <div className="space-y-0.5">
-                                  <span className="text-[9px] text-zinc-500 block uppercase font-medium">
+                                  <span className="text-[7px] lg:text-[9px] text-zinc-500 block uppercase font-medium">
                                     {labelText}
                                   </span>
                                   <span
-                                    className={`text-base font-extrabold ${scoreColor}`}
+                                    className={`text-sm lg:text-base font-extrabold ${scoreColor}`}
                                   >
                                     {(score * 100).toFixed(0)}%
                                   </span>
                                 </div>
                                 <div className="text-right">
-                                  <span className="text-[9px] text-zinc-500 block uppercase font-medium">
-                                    Location
+                                  <span className="text-[7px] lg:text-[9px] text-zinc-500 block uppercase font-medium">
+                                    Loc
                                   </span>
-                                  <span className="text-[10px] text-zinc-400 font-mono">
-                                    {risk.latitude.toFixed(3)},{" "}
-                                    {risk.longitude.toFixed(3)}
+                                  <span className="text-[7px] lg:text-[10px] text-zinc-400 font-mono">
+                                    {risk.latitude.toFixed(2)},{" "}
+                                    {risk.longitude.toFixed(2)}
                                   </span>
                                 </div>
                               </div>
@@ -863,56 +871,64 @@ export default function Home() {
             </div>
           ) : (
             /* Location Inspect Tab Content */
-            <div className="space-y-4">
-              <div className="bg-zinc-900 border border-white/5 rounded-2xl p-4 shadow-xl">
-                <h2 className="text-sm font-semibold text-zinc-200 flex items-center gap-2">
-                  <Search className="text-violet-400" size={16} />
-                  Location Risk Inspector
+            <div className="space-y-2.5 lg:space-y-4">
+              <div className="bg-zinc-900 border border-white/5 rounded-lg lg:rounded-2xl p-2.5 lg:p-4 shadow-xl">
+                <h2 className="text-xs lg:text-sm font-semibold text-zinc-200 flex items-center gap-1 lg:gap-2">
+                  <Search
+                    className="text-violet-400 w-3.5 lg:w-4 h-3.5 lg:h-4"
+                    size={14}
+                  />
+                  Location Inspector
                 </h2>
-                <p className="text-xs text-zinc-400 mt-1.5 leading-relaxed">
-                  Type any town or area in Ghana to get live weather conditions
-                  and environmental risk scores.
+                <p className="text-[10px] lg:text-xs text-zinc-400 mt-1 lg:mt-1.5 leading-relaxed">
+                  Search any town in Ghana for weather & risk scores.
                 </p>
                 <form
                   onSubmit={handleLocationSearch}
-                  className="mt-3 flex gap-2"
+                  className="mt-2 lg:mt-3 flex gap-1.5 lg:gap-2"
                 >
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="e.g. Tarkwa, Obuasi, Kumasi..."
-                    className="flex-1 bg-zinc-950 border border-white/10 focus:border-violet-500/60 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none transition-all"
+                    placeholder="e.g. Tarkwa, Kumasi..."
+                    className="flex-1 bg-zinc-950 border border-white/10 focus:border-violet-500/60 rounded-lg lg:rounded-xl px-2 lg:px-3 py-1.5 lg:py-2 text-xs lg:text-sm text-white placeholder-zinc-600 outline-none transition-all"
                   />
                   <button
                     type="submit"
                     disabled={searchLoading || !searchQuery.trim()}
-                    className="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                    className="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-2 lg:px-3 py-1.5 lg:py-2 rounded-lg lg:rounded-xl text-[10px] lg:text-xs font-bold transition-all flex items-center gap-1 lg:gap-1.5 cursor-pointer"
                   >
                     {searchLoading ? (
-                      <Loader2 size={14} className="animate-spin" />
+                      <Loader2
+                        size={12}
+                        className="lg:w-[14px] lg:h-[14px] animate-spin"
+                      />
                     ) : (
-                      <Search size={14} />
+                      <Search size={12} className="lg:w-[14px] lg:h-[14px]" />
                     )}
                   </button>
                 </form>
               </div>
 
               {searchError && (
-                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-xs text-red-400 flex items-start gap-2">
-                  <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg lg:rounded-xl p-2 lg:p-3 text-xs text-red-400 flex items-start gap-1.5 lg:gap-2">
+                  <AlertCircle
+                    size={12}
+                    className="lg:w-[14px] lg:h-[14px] flex-shrink-0 mt-0.5"
+                  />
                   {searchError}
                 </div>
               )}
 
               {searchLoading && (
-                <div className="space-y-3">
+                <div className="space-y-2 lg:space-y-3">
                   {[1, 2, 3].map((i) => (
                     <div
                       key={i}
-                      className="bg-zinc-900/50 border border-white/5 rounded-xl p-4 animate-pulse"
+                      className="bg-zinc-900/50 border border-white/5 rounded-lg lg:rounded-xl p-2.5 lg:p-4 animate-pulse"
                     >
-                      <div className="h-3 bg-zinc-800 rounded w-1/2 mb-2" />
+                      <div className="h-2 lg:h-3 bg-zinc-800 rounded w-1/2 mb-1.5 lg:mb-2" />
                       <div className="h-2 bg-zinc-800 rounded w-3/4" />
                     </div>
                   ))}
@@ -1082,7 +1098,7 @@ export default function Home() {
       </aside>
 
       {/* Main Content - Map */}
-      <main className="flex-1 relative p-4 bg-zinc-950">
+      <main className="flex-1 relative p-4 bg-zinc-950 min-h-[60vh] lg:min-h-screen w-full">
         <Map
           reports={filteredReports}
           isReporting={isReporting}
